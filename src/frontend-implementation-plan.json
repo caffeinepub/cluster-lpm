@@ -1,0 +1,59 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Fix login authentication flow to resolve Version 17 login failure",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Revert authentication logic to Version 16 state to restore working login functionality",
+      "acceptanceCriteria": [
+        "User can successfully initiate Internet Identity login flow",
+        "Authentication completes without blocking errors",
+        "User is redirected to appropriate page after login"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useInternetIdentity.ts",
+          "operation": "modify",
+          "description": "Review and revert any authentication state management changes that broke the login flow in Version 17. Ensure the login method properly handles the AuthClient initialization, identity delegation, and session persistence without introducing blocking conditions. Verify the component's usage instructions from the authorization component before implementing."
+        },
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Restore the Version 16 login page logic that handled the multi-stage authentication flow correctly. Ensure proper handling of authentication states (connecting, authenticating, processing), timeout management, and redirect logic after successful login. Remove any Version 17 changes that introduced authentication blocking or flow interruptions."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Review actor initialization and authentication state handling to ensure it properly integrates with the Internet Identity flow. Verify that the actor becomes available at the correct time in the authentication lifecycle and doesn't create race conditions or blocking states."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Remove or fix the 'user is already authenticated' error message that appears after successful login in Version 16",
+      "acceptanceCriteria": [
+        "No 'already authenticated' error displays after successful login",
+        "User can proceed directly to their dashboard without error messages",
+        "Session state is correctly managed to prevent duplicate authentication checks"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useInternetIdentity.ts",
+          "operation": "modify",
+          "description": "Fix the duplicate authentication check that triggers the 'user is already authenticated' error. Implement proper session state validation to detect when a user is already authenticated before attempting login, and handle this case gracefully without showing an error message. Ensure the authentication state is correctly synchronized across the application."
+        },
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Add logic to check if the user is already authenticated before rendering the login form. If authenticated, redirect directly to the appropriate dashboard (admin or hotel) without displaying error messages. Handle the session restoration flow cleanly to prevent the 'already authenticated' error from appearing to users."
+        },
+        {
+          "path": "frontend/src/components/auth/RequireAuth.tsx",
+          "operation": "modify",
+          "description": "Ensure the authentication guard correctly handles already-authenticated sessions without triggering redundant authentication checks. Verify that the component doesn't cause the 'already authenticated' error when users navigate between protected routes or refresh the page while logged in."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [
+    "Version 17: Login functionality broken, cannot login at all",
+    "Version 16: After successful login, shows 'user is already authenticated' error message"
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-revert-authentication-logic-to-version-16-state-to-restore-working-login-functionality",
+      "title": "Revert authentication logic to Version 16 state to restore working login functionality",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-or-fix-the-user-is-already-authenticated-error-message-that-appears-after-successful-login-in-version-16",
+      "title": "Remove or fix the 'user is already authenticated' error message that appears after successful login in Version 16",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [],
+  "projectName": "Cluster LPM",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
