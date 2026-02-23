@@ -6,8 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGetAllHotels } from '@/lib/backend/hotels';
 import { useCreateUser } from '@/lib/backend/users';
-import { Loader2 } from 'lucide-react';
-import { Principal } from '@dfinity/principal';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { UserRole } from '@/backend';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -21,7 +20,6 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
   const createUser = useCreateUser();
 
   const [formData, setFormData] = useState({
-    principal: '',
     name: '',
     username: '',
     hotelId: '',
@@ -36,10 +34,6 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
   const validateForm = () => {
     console.log('[CreateUserDialog] Starting form validation with data:', formData);
     const newErrors: Record<string, string> = {};
-
-    if (!formData.principal.trim()) {
-      newErrors.principal = 'Principal is required';
-    }
 
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
@@ -82,56 +76,48 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
       return;
     }
 
-    try {
-      const principal = Principal.fromText(formData.principal.trim());
-      const hotelId = formData.hotelId ? BigInt(formData.hotelId) : null;
-      const securityManager = formData.securityManager.trim() || null;
-      const contactNumber = formData.contactNumber.trim() || null;
+    const hotelId = formData.hotelId ? BigInt(formData.hotelId) : null;
+    const securityManager = formData.securityManager.trim() || null;
+    const contactNumber = formData.contactNumber.trim() || null;
 
-      const payload = {
-        userPrincipal: principal,
-        name: formData.name.trim(),
-        username: formData.username.trim(),
-        hotelId,
-        securityManager,
-        contactNumber,
-        password: formData.password.trim(),
-        role: formData.role === 'admin' ? UserRole.admin : UserRole.user,
-      };
+    const payload = {
+      name: formData.name.trim(),
+      username: formData.username.trim(),
+      hotelId,
+      securityManager,
+      contactNumber,
+      password: formData.password.trim(),
+      role: formData.role === 'admin' ? UserRole.admin : UserRole.user,
+    };
 
-      console.log('[CreateUserDialog] Prepared payload for mutation:', {
-        ...payload,
-        password: '***REDACTED***',
-        userPrincipal: payload.userPrincipal.toString(),
-      });
+    console.log('[CreateUserDialog] Prepared payload for mutation:', {
+      ...payload,
+      password: '***REDACTED***',
+    });
 
-      console.log('[CreateUserDialog] Triggering mutation...');
-      createUser.mutate(payload, {
-        onSuccess: () => {
-          console.log('[CreateUserDialog] Mutation succeeded, resetting form and closing dialog');
-          // Reset form and close dialog
-          setFormData({
-            principal: '',
-            name: '',
-            username: '',
-            hotelId: '',
-            securityManager: '',
-            contactNumber: '',
-            password: '',
-            role: 'user',
-          });
-          setErrors({});
-          onOpenChange(false);
-        },
-        onError: (error) => {
-          console.error('[CreateUserDialog] Mutation failed with error:', error);
-        },
-      });
-      console.log('[CreateUserDialog] Mutation triggered, isPending:', createUser.isPending);
-    } catch (error) {
-      console.error('[CreateUserDialog] Error preparing submission:', error);
-      setErrors({ ...errors, principal: 'Error processing principal ID' });
-    }
+    console.log('[CreateUserDialog] Triggering mutation...');
+    createUser.mutate(payload, {
+      onSuccess: () => {
+        console.log('[CreateUserDialog] Mutation succeeded, resetting form and closing dialog');
+        // Reset form and close dialog
+        setFormData({
+          name: '',
+          username: '',
+          hotelId: '',
+          securityManager: '',
+          contactNumber: '',
+          password: '',
+          role: 'user',
+        });
+        setErrors({});
+        onOpenChange(false);
+      },
+      onError: (error) => {
+        console.error('[CreateUserDialog] Mutation failed with error:', error);
+        // Error is already handled by the mutation hook and displayed in the Alert
+      },
+    });
+    console.log('[CreateUserDialog] Mutation triggered, isPending:', createUser.isPending);
   };
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -139,7 +125,6 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
     if (!newOpen && !createUser.isPending) {
       // Reset form when closing (only if not pending)
       setFormData({
-        principal: '',
         name: '',
         username: '',
         hotelId: '',
@@ -157,7 +142,7 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogOverlay className="bg-black/60" />
-      <DialogContent className="sm:max-w-[500px] bg-background">
+      <DialogContent className="sm:max-w-[500px] bg-background max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New User</DialogTitle>
           <DialogDescription>
@@ -168,26 +153,12 @@ export function CreateUserDialog({ open, onOpenChange }: CreateUserDialogProps) 
         <form onSubmit={handleSubmit} className="space-y-4">
           {createUser.isError && (
             <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 {createUser.error?.message || 'Failed to create user. Please try again.'}
               </AlertDescription>
             </Alert>
           )}
-
-          <div className="space-y-2">
-            <Label htmlFor="principal">Principal ID *</Label>
-            <Input
-              id="principal"
-              placeholder="Enter user's principal ID"
-              value={formData.principal}
-              onChange={(e) => setFormData({ ...formData, principal: e.target.value })}
-              className={errors.principal ? 'border-destructive' : ''}
-              disabled={createUser.isPending}
-            />
-            {errors.principal && (
-              <p className="text-sm text-destructive">{errors.principal}</p>
-            )}
-          </div>
 
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>

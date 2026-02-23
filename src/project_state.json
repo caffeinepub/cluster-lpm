@@ -1,33 +1,50 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "Admin user management system with simplified user creation",
+  "architectural_notes": [
+    "Admin page includes user creation functionality",
+    "User creation form currently requires principal ID field"
+  ],
   "known_issues": [
-    "Version 17: Login functionality broken, cannot login at all",
-    "Version 16: After successful login, shows 'user is already authenticated' error message"
+    "Principal ID field in user creation form is difficult to use and not accepting valid formats"
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-revert-authentication-logic-to-version-16-state-to-restore-working-login-functionality",
-      "title": "Revert authentication logic to Version 16 state to restore working login functionality",
+      "id": "feature-remove-the-principal-id-input-field-from-the-createuserdialog-form-in-frontend-src-components-admin-createuserdialog-tsx",
+      "title": "Remove the principal ID input field from the CreateUserDialog form in frontend/src/components/admin/CreateUserDialog.tsx",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-remove-or-fix-the-user-is-already-authenticated-error-message-that-appears-after-successful-login-in-version-16",
-      "title": "Remove or fix the 'user is already authenticated' error message that appears after successful login in Version 16",
+      "id": "feature-update-the-usecreateuser-mutation-hook-in-frontend-src-lib-backend-users-ts-to-automatically-generate-or-handle-principal-id-server-side-when-creating-users-removing-the-principal-id-parameter-from-the-mutation-input",
+      "title": "Update the useCreateUser mutation hook in frontend/src/lib/backend/users.ts to automatically generate or handle principal ID server-side when creating users, removing the principal ID parameter from the mutation input",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "projectName": "Cluster LPM",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Remove or simplify principal ID field from user creation page",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Update the backend createUser method in backend/main.mo to automatically generate a unique principal ID for new users instead of accepting it as a parameter",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Remove principal ID field from user creation form",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

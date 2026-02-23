@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-revert-authentication-logic-to-version-16-state-to-restore-working-login-functionality",
-      "featureTitle": "Revert authentication logic to Version 16 state to restore working login functionality",
+      "featureId": "feature-remove-the-principal-id-input-field-from-the-createuserdialog-form-in-frontend-src-components-admin-createuserdialog-tsx",
+      "featureTitle": "Remove the principal ID input field from the CreateUserDialog form in frontend/src/components/admin/CreateUserDialog.tsx",
       "files": [
-        "frontend/src/pages/LoginPage.tsx"
+        "frontend/src/components/admin/CreateUserDialog.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,10 +22,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-remove-or-fix-the-user-is-already-authenticated-error-message-that-appears-after-successful-login-in-version-16",
-      "featureTitle": "Remove or fix the 'user is already authenticated' error message that appears after successful login in Version 16",
+      "featureId": "feature-update-the-usecreateuser-mutation-hook-in-frontend-src-lib-backend-users-ts-to-automatically-generate-or-handle-principal-id-server-side-when-creating-users-removing-the-principal-id-parameter-from-the-mutation-input",
+      "featureTitle": "Update the useCreateUser mutation hook in frontend/src/lib/backend/users.ts to automatically generate or handle principal ID server-side when creating users, removing the principal ID parameter from the mutation input",
       "files": [
-        "frontend/src/pages/LoginPage.tsx"
+        "frontend/src/lib/backend/users.ts"
       ],
       "components": [
         "authorization@4.0.0",

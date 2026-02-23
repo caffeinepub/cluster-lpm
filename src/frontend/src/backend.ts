@@ -148,22 +148,22 @@ export interface backendInterface {
     assignUserToTask(taskId: string, user: Principal): Promise<void>;
     createManualHotel(id: bigint, name: string, isActive: boolean): Promise<void>;
     createTask(title: string, description: string, dueDate: Time, priority: string, hotelIds: Array<bigint>): Promise<string>;
-    createUser(userPrincipal: Principal, name: string, username: string, hotelId: bigint | null, securityManager: string | null, contactNumber: string | null, password: string, role: UserRole): Promise<void>;
+    createUser(name: string, username: string, hotelId: bigint | null, securityManager: string | null, contactNumber: string | null, password: string, role: UserRole): Promise<string>;
     deleteHotel(hotelId: bigint): Promise<void>;
-    deleteUser(userPrincipal: Principal): Promise<void>;
+    deleteUser(userId: string): Promise<void>;
     getAllHotels(): Promise<Array<Hotel>>;
     getAllTasks(): Promise<Array<Task>>;
-    getAllUsersProfiles(): Promise<Array<[Principal, UserProfile]>>;
+    getAllUsersProfiles(): Promise<Array<[string, UserProfile]>>;
     getAuditLogs(): Promise<Array<AuditLog>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole__1>;
     getTask(taskId: string): Promise<Task | null>;
     getTaskComments(taskId: string): Promise<Array<TaskComment>>;
-    getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getUserProfile(userId: string): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateHotel(hotelId: bigint, name: string, isActive: boolean): Promise<void>;
-    updateUser(userPrincipal: Principal, name: string, username: string, hotelId: bigint | null, securityManager: string | null, contactNumber: string | null, isActive: boolean, password: string, role: UserRole): Promise<void>;
+    updateUser(userId: string, name: string, username: string, hotelId: bigint | null, securityManager: string | null, contactNumber: string | null, isActive: boolean, password: string, role: UserRole): Promise<void>;
 }
 import type { AuditLog as _AuditLog, Task as _Task, Time as _Time, UserProfile as _UserProfile, UserRole as _UserRole, UserRole__1 as _UserRole__1 } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -280,17 +280,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createUser(arg0: Principal, arg1: string, arg2: string, arg3: bigint | null, arg4: string | null, arg5: string | null, arg6: string, arg7: UserRole): Promise<void> {
+    async createUser(arg0: string, arg1: string, arg2: bigint | null, arg3: string | null, arg4: string | null, arg5: string, arg6: UserRole): Promise<string> {
         if (this.processError) {
             try {
-                const result = await this.actor.createUser(arg0, arg1, arg2, to_candid_opt_n3(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg4), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg5), arg6, to_candid_UserRole_n5(this._uploadFile, this._downloadFile, arg7));
+                const result = await this.actor.createUser(arg0, arg1, to_candid_opt_n3(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg4), arg5, to_candid_UserRole_n5(this._uploadFile, this._downloadFile, arg6));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createUser(arg0, arg1, arg2, to_candid_opt_n3(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg4), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg5), arg6, to_candid_UserRole_n5(this._uploadFile, this._downloadFile, arg7));
+            const result = await this.actor.createUser(arg0, arg1, to_candid_opt_n3(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg4), arg5, to_candid_UserRole_n5(this._uploadFile, this._downloadFile, arg6));
             return result;
         }
     }
@@ -308,7 +308,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async deleteUser(arg0: Principal): Promise<void> {
+    async deleteUser(arg0: string): Promise<void> {
         if (this.processError) {
             try {
                 const result = await this.actor.deleteUser(arg0);
@@ -350,7 +350,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getAllUsersProfiles(): Promise<Array<[Principal, UserProfile]>> {
+    async getAllUsersProfiles(): Promise<Array<[string, UserProfile]>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllUsersProfiles();
@@ -434,7 +434,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
+    async getUserProfile(arg0: string): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
@@ -490,7 +490,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async updateUser(arg0: Principal, arg1: string, arg2: string, arg3: bigint | null, arg4: string | null, arg5: string | null, arg6: boolean, arg7: string, arg8: UserRole): Promise<void> {
+    async updateUser(arg0: string, arg1: string, arg2: string, arg3: bigint | null, arg4: string | null, arg5: string | null, arg6: boolean, arg7: string, arg8: UserRole): Promise<void> {
         if (this.processError) {
             try {
                 const result = await this.actor.updateUser(arg0, arg1, arg2, to_candid_opt_n3(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg4), to_candid_opt_n4(this._uploadFile, this._downloadFile, arg5), arg6, arg7, to_candid_UserRole_n5(this._uploadFile, this._downloadFile, arg8));
@@ -583,7 +583,7 @@ function from_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uin
         actorPrincipal: value.actorPrincipal
     };
 }
-function from_candid_tuple_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [Principal, _UserProfile]): [Principal, UserProfile] {
+function from_candid_tuple_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [string, _UserProfile]): [string, UserProfile] {
     return [
         value[0],
         from_candid_UserProfile_n9(_uploadFile, _downloadFile, value[1])
@@ -608,7 +608,7 @@ function from_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Ui
 function from_candid_vec_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AuditLog>): Array<AuditLog> {
     return value.map((x)=>from_candid_AuditLog_n16(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<[Principal, _UserProfile]>): Array<[Principal, UserProfile]> {
+function from_candid_vec_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<[string, _UserProfile]>): Array<[string, UserProfile]> {
     return value.map((x)=>from_candid_tuple_n8(_uploadFile, _downloadFile, x));
 }
 function to_candid_UserProfile_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {

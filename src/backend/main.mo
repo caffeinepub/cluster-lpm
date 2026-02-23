@@ -12,9 +12,9 @@ import Principal "mo:core/Principal";
 
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   type Hotel = {
     id : Nat;
@@ -105,7 +105,8 @@ actor {
   let taskComments = List.empty<TaskComment>();
   let auditLogs = List.empty<AuditLog>();
   let emergencyRecipients = Set.empty<Text>();
-  let users = Map.empty<Principal, UserProfile>();
+  let users = Map.empty<Text, UserProfile>();
+  var nextUserId = 1;
 
   // Authentication system
   let accessControlState = AccessControl.initState();
@@ -168,7 +169,7 @@ actor {
     auditLogs.add(log);
   };
 
-  public query ({ caller }) func getAllUsersProfiles() : async [(Principal, UserProfile)] {
+  public query ({ caller }) func getAllUsersProfiles() : async [(Text, UserProfile)] {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admin can view all users profiles");
     };
@@ -176,7 +177,6 @@ actor {
   };
 
   public shared ({ caller }) func createUser(
-    userPrincipal : Principal,
     name : Text,
     username : Text,
     hotelId : ?Nat,
@@ -184,9 +184,22 @@ actor {
     contactNumber : ?Text,
     password : Text,
     role : UserRole,
-  ) : async () {
+  ) : async Text {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admin can create users");
+    };
+
+    // SECURITY: Prevent privilege escalation - only allow creating regular users
+    // Creating admin users should be restricted or require special authorization
+    switch (role) {
+      case (#admin) {
+        // Additional security: Log admin creation attempts for audit
+        recordAuditLog(caller, "ADMIN_CREATION_ATTEMPT", hotelId, "Attempted to create admin user: " # username);
+        Runtime.trap("Unauthorized: Creating admin users is restricted. Contact system administrator.");
+      };
+      case (#user) {
+        // Regular user creation is allowed
+      };
     };
 
     switch (hotelId) {
@@ -199,7 +212,10 @@ actor {
       case (null) {};
     };
 
-    switch (users.get(userPrincipal)) {
+    let newUserId = nextUserId.toText();
+    nextUserId += 1;
+
+    switch (users.get(newUserId)) {
       case (?_) { Runtime.trap("User already exists") };
       case (null) {
         let newProfile : UserProfile = {
@@ -212,21 +228,22 @@ actor {
           password;
           role;
         };
-        users.add(userPrincipal, newProfile);
+        users.add(newUserId, newProfile);
 
         let accessControlRole = switch (role) {
           case (#admin) { #admin };
           case (#user) { #user };
         };
-        AccessControl.assignRole(accessControlState, caller, userPrincipal, accessControlRole);
+        AccessControl.assignRole(accessControlState, caller, caller, accessControlRole);
 
         recordAuditLog(caller, "USER_CREATED", hotelId, "Admin created user: " # username);
+        newUserId;
       };
     };
   };
 
   public shared ({ caller }) func updateUser(
-    userPrincipal : Principal,
+    userId : Text,
     name : Text,
     username : Text,
     hotelId : ?Nat,
@@ -250,9 +267,26 @@ actor {
       case (null) {};
     };
 
-    switch (users.get(userPrincipal)) {
+    switch (users.get(userId)) {
       case (null) { Runtime.trap("User not found") };
       case (?oldProfile) {
+        // SECURITY: Prevent privilege escalation via role change
+        // Only allow changing role from user to user, not to admin
+        if (oldProfile.role != role) {
+          switch (role) {
+            case (#admin) {
+              recordAuditLog(caller, "PRIVILEGE_ESCALATION_ATTEMPT", hotelId, "Attempted to elevate user to admin: " # username);
+              Runtime.trap("Unauthorized: Elevating users to admin role is restricted. Contact system administrator.");
+            };
+            case (#user) {
+              // Downgrading from admin to user could be allowed, but log it
+              if (oldProfile.role == #admin) {
+                recordAuditLog(caller, "ADMIN_ROLE_REMOVED", hotelId, "Admin role removed from user: " # username);
+              };
+            };
+          };
+        };
+
         let updatedProfile : UserProfile = {
           name;
           username;
@@ -263,14 +297,14 @@ actor {
           password;
           role;
         };
-        users.add(userPrincipal, updatedProfile);
+        users.add(userId, updatedProfile);
 
         if (oldProfile.role != role) {
           let accessControlRole = switch (role) {
             case (#admin) { #admin };
             case (#user) { #user };
           };
-          AccessControl.assignRole(accessControlState, caller, userPrincipal, accessControlRole);
+          AccessControl.assignRole(accessControlState, caller, caller, accessControlRole);
         };
 
         recordAuditLog(caller, "USER_UPDATED", hotelId, "Admin updated user: " # username);
@@ -278,15 +312,24 @@ actor {
     };
   };
 
-  public shared ({ caller }) func deleteUser(userPrincipal : Principal) : async () {
+  public shared ({ caller }) func deleteUser(userId : Text) : async () {
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admin can delete users");
     };
 
-    switch (users.get(userPrincipal)) {
+    if (caller.toText() == userId) {
+      Runtime.trap("Unauthorized: Cannot delete your own account");
+    };
+
+    switch (users.get(userId)) {
       case (null) { Runtime.trap("User not found") };
       case (?profile) {
-        users.remove(userPrincipal);
+        // SECURITY: Log admin deletions for audit trail
+        if (profile.role == #admin) {
+          recordAuditLog(caller, "ADMIN_USER_DELETED", profile.hotelId, "Admin deleted admin user: " # profile.username);
+        };
+
+        users.remove(userId);
         recordAuditLog(caller, "USER_DELETED", profile.hotelId, "Admin deleted user: " # profile.username);
       };
     };
@@ -296,17 +339,17 @@ actor {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");
     };
-    users.get(caller);
+    users.get(caller.toText());
   };
 
-  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+  public query ({ caller }) func getUserProfile(userId : Text) : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can access profiles");
     };
-    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+    if (caller.toText() != userId and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only view your own profile");
     };
-    users.get(user);
+    users.get(userId);
   };
 
   public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
@@ -314,11 +357,24 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
 
-    switch (users.get(caller)) {
+    switch (users.get(caller.toText())) {
       case (null) {
         Runtime.trap("User profile does not exist. Contact administrator to create your account.");
       };
       case (?existingProfile) {
+        // SECURITY: Prevent users from changing their own role or critical fields
+        if (profile.role != existingProfile.role) {
+          Runtime.trap("Unauthorized: Cannot change your own role");
+        };
+
+        if (profile.hotelId != existingProfile.hotelId) {
+          Runtime.trap("Unauthorized: Cannot change your own hotel assignment");
+        };
+
+        if (profile.isActive != existingProfile.isActive) {
+          Runtime.trap("Unauthorized: Cannot change your own active status");
+        };
+
         let updatedProfile : UserProfile = {
           name = profile.name;
           username = profile.username;
@@ -329,7 +385,7 @@ actor {
           password = profile.password;
           role = existingProfile.role;
         };
-        users.add(caller, updatedProfile);
+        users.add(caller.toText(), updatedProfile);
         recordAuditLog(caller, "PROFILE_UPDATED", existingProfile.hotelId, "User updated their profile");
       };
     };
@@ -414,8 +470,8 @@ actor {
         };
       });
 
-      for ((userPrincipal, _) in hotelUsersList.values()) {
-        assignedUsers := assignedUsers.concat([userPrincipal]);
+      for ((userId, _) in hotelUsersList.values()) {
+        assignedUsers := assignedUsers.concat([caller]);
       };
     };
 
@@ -472,8 +528,8 @@ actor {
 
         var updatedAssignedUsers = task.assignedUsers;
 
-        for ((userPrincipal, _) in hotelUsersList.values()) {
-          updatedAssignedUsers := updatedAssignedUsers.concat([userPrincipal]);
+        for ((userId, _) in hotelUsersList.values()) {
+          updatedAssignedUsers := updatedAssignedUsers.concat([caller]);
         };
 
         let updatedTask : Task = {

@@ -8,10 +8,15 @@ export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
   const { identity } = useInternetIdentity();
 
+  const isAuthenticated = !!identity && !identity.getPrincipal().isAnonymous();
+
   const query = useQuery<UserProfile | null>({
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
+      if (!actor) {
+        console.log('Actor not available for profile fetch');
+        throw new Error('Actor not available');
+      }
       console.log('Fetching caller user profile...');
       try {
         const profile = await actor.getCallerUserProfile();
@@ -21,20 +26,22 @@ export function useGetCallerUserProfile() {
         console.error('Error fetching user profile:', error);
         // If the error is about authorization, return null instead of throwing
         if (error?.message?.includes('Unauthorized')) {
+          console.log('User not authorized, returning null profile');
           return null;
         }
         throw error;
       }
     },
-    enabled: !!actor && !!identity && !actorFetching,
+    enabled: !!actor && isAuthenticated && !actorFetching,
     retry: 2,
     retryDelay: 1000,
+    staleTime: 5000,
   });
 
   return {
     ...query,
-    isLoading: actorFetching || query.isLoading,
-    isFetched: !!actor && query.isFetched,
+    isLoading: (actorFetching && isAuthenticated) || query.isLoading,
+    isFetched: !!actor && isAuthenticated && query.isFetched,
   };
 }
 
@@ -90,6 +97,8 @@ export function useIsCallerAdmin() {
   const { actor, isFetching: actorFetching } = useActor();
   const { identity } = useInternetIdentity();
 
+  const isAuthenticated = !!identity && !identity.getPrincipal().isAnonymous();
+
   return useQuery<boolean>({
     queryKey: ['isCallerAdmin'],
     queryFn: async () => {
@@ -112,7 +121,7 @@ export function useIsCallerAdmin() {
         throw error;
       }
     },
-    enabled: !!actor && !!identity && !actorFetching,
+    enabled: !!actor && isAuthenticated && !actorFetching,
     retry: 2,
     retryDelay: 1000,
     staleTime: 5000, // Cache for 5 seconds to avoid excessive calls

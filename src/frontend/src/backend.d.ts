@@ -65,20 +65,20 @@ export interface backendInterface {
     assignUserToTask(taskId: string, user: Principal): Promise<void>;
     createManualHotel(id: bigint, name: string, isActive: boolean): Promise<void>;
     createTask(title: string, description: string, dueDate: Time, priority: string, hotelIds: Array<bigint>): Promise<string>;
-    createUser(userPrincipal: Principal, name: string, username: string, hotelId: bigint | null, securityManager: string | null, contactNumber: string | null, password: string, role: UserRole): Promise<void>;
+    createUser(name: string, username: string, hotelId: bigint | null, securityManager: string | null, contactNumber: string | null, password: string, role: UserRole): Promise<string>;
     deleteHotel(hotelId: bigint): Promise<void>;
-    deleteUser(userPrincipal: Principal): Promise<void>;
+    deleteUser(userId: string): Promise<void>;
     getAllHotels(): Promise<Array<Hotel>>;
     getAllTasks(): Promise<Array<Task>>;
-    getAllUsersProfiles(): Promise<Array<[Principal, UserProfile]>>;
+    getAllUsersProfiles(): Promise<Array<[string, UserProfile]>>;
     getAuditLogs(): Promise<Array<AuditLog>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole__1>;
     getTask(taskId: string): Promise<Task | null>;
     getTaskComments(taskId: string): Promise<Array<TaskComment>>;
-    getUserProfile(user: Principal): Promise<UserProfile | null>;
+    getUserProfile(userId: string): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     updateHotel(hotelId: bigint, name: string, isActive: boolean): Promise<void>;
-    updateUser(userPrincipal: Principal, name: string, username: string, hotelId: bigint | null, securityManager: string | null, contactNumber: string | null, isActive: boolean, password: string, role: UserRole): Promise<void>;
+    updateUser(userId: string, name: string, username: string, hotelId: bigint | null, securityManager: string | null, contactNumber: string | null, isActive: boolean, password: string, role: UserRole): Promise<void>;
 }

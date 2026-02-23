@@ -1,21 +1,20 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useDeleteUser } from '@/lib/backend/users';
 import { Loader2 } from 'lucide-react';
-import { Principal } from '@dfinity/principal';
 
 interface DeleteUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userPrincipal: Principal;
+  userId: string;
   userName: string;
 }
 
-export function DeleteUserDialog({ open, onOpenChange, userPrincipal, userName }: DeleteUserDialogProps) {
+export function DeleteUserDialog({ open, onOpenChange, userId, userName }: DeleteUserDialogProps) {
   const deleteUser = useDeleteUser();
 
   const handleDelete = async () => {
     try {
-      await deleteUser.mutateAsync(userPrincipal);
+      await deleteUser.mutateAsync(userId);
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to delete user:', error);

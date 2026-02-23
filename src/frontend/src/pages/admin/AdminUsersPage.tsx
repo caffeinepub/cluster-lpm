@@ -9,18 +9,17 @@ import { CreateUserDialog } from '@/components/admin/CreateUserDialog';
 import { EditUserDialog } from '@/components/admin/EditUserDialog';
 import { DeleteUserDialog } from '@/components/admin/DeleteUserDialog';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
-import { Principal } from '@dfinity/principal';
 import type { UserProfile } from '@/backend';
 
 export default function AdminUsersPage() {
   const { data: users, isLoading } = useGetAllUsersProfiles();
   const { identity } = useInternetIdentity();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<{ principal: Principal; profile: UserProfile } | null>(null);
-  const [deletingUser, setDeletingUser] = useState<{ principal: Principal; name: string } | null>(null);
+  const [editingUser, setEditingUser] = useState<{ userId: string; profile: UserProfile } | null>(null);
+  const [deletingUser, setDeletingUser] = useState<{ userId: string; name: string } | null>(null);
 
-  const isCurrentUser = (principal: Principal) => {
-    return identity?.getPrincipal().toString() === principal.toString();
+  const isCurrentUser = (userId: string) => {
+    return identity?.getPrincipal().toString() === userId;
   };
 
   return (
@@ -74,8 +73,8 @@ export default function AdminUsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map(([principal, profile]) => (
-                    <TableRow key={principal.toString()}>
+                  {users.map(([userId, profile]) => (
+                    <TableRow key={userId}>
                       <TableCell>{profile.name}</TableCell>
                       <TableCell>{profile.username}</TableCell>
                       <TableCell>
@@ -102,16 +101,16 @@ export default function AdminUsersPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setEditingUser({ principal, profile })}
+                            onClick={() => setEditingUser({ userId, profile })}
                           >
                             <Pencil className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setDeletingUser({ principal, name: profile.name })}
-                            disabled={isCurrentUser(principal)}
-                            title={isCurrentUser(principal) ? 'Cannot delete your own account' : 'Delete user'}
+                            onClick={() => setDeletingUser({ userId, name: profile.name })}
+                            disabled={isCurrentUser(userId)}
+                            title={isCurrentUser(userId) ? 'Cannot delete your own account' : 'Delete user'}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -135,7 +134,7 @@ export default function AdminUsersPage() {
         <EditUserDialog
           open={!!editingUser}
           onOpenChange={(open) => !open && setEditingUser(null)}
-          userPrincipal={editingUser.principal}
+          userId={editingUser.userId}
           userProfile={editingUser.profile}
         />
       )}
@@ -144,7 +143,7 @@ export default function AdminUsersPage() {
         <DeleteUserDialog
           open={!!deletingUser}
           onOpenChange={(open) => !open && setDeletingUser(null)}
-          userPrincipal={deletingUser.principal}
+          userId={deletingUser.userId}
           userName={deletingUser.name}
         />
       )}

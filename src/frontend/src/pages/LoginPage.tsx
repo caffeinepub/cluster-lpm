@@ -10,16 +10,17 @@ import { DelegationIdentity, isDelegationValid } from '@icp-sdk/core/identity';
 
 type LoginStage = 'idle' | 'connecting' | 'authenticating' | 'processing';
 
-const LOGIN_TIMEOUT_MS = 30000; // 30 seconds
+const LOGIN_TIMEOUT_MS = 45000; // 45 seconds
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login, loginStatus, loginError: iiLoginError, identity } = useInternetIdentity();
+  const { login, loginStatus, loginError: iiLoginError, identity, isInitializing } = useInternetIdentity();
   const { actor, isFetching: actorFetching } = useActor();
 
   const [loginStage, setLoginStage] = useState<LoginStage>('idle');
   const [timeoutError, setTimeoutError] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasRedirected = useRef(false);
 
   // Calculate hasValidSession locally
   const hasValidSession = useMemo(() => {
@@ -41,8 +42,9 @@ export default function LoginPage() {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
       }
-      setLoginStage('idle');
-      setTimeoutError(null);
+      if (loginStatus === 'loginError') {
+        setLoginStage('idle');
+      }
     }
   }, [loginStatus]);
 
@@ -57,30 +59,35 @@ export default function LoginPage() {
 
   // Redirect to admin after authentication and actor is ready
   useEffect(() => {
-    if (isAuthenticated && actor && !actorFetching) {
+    if (isAuthenticated && actor && !actorFetching && !isInitializing && !hasRedirected.current) {
       console.log('User authenticated and actor ready, redirecting to /admin');
-      navigate({ to: '/admin' });
+      hasRedirected.current = true;
+      // Small delay to ensure state is settled
+      setTimeout(() => {
+        navigate({ to: '/admin' });
+      }, 100);
     }
-  }, [isAuthenticated, actor, actorFetching, navigate]);
+  }, [isAuthenticated, actor, actorFetching, isInitializing, navigate]);
 
   const handleLogin = async () => {
     try {
       // Clear any previous errors
       setTimeoutError(null);
+      hasRedirected.current = false;
       
       // Set initial stage
       setLoginStage('connecting');
 
       // Set up timeout
       timeoutRef.current = setTimeout(() => {
-        setTimeoutError('Authentication timed out after 30 seconds. Please try again.');
+        setTimeoutError('Authentication timed out. Please try again.');
         setLoginStage('idle');
         timeoutRef.current = null;
       }, LOGIN_TIMEOUT_MS);
 
       // Update stage to authenticating after brief delay
       setTimeout(() => {
-        if (loginStage === 'connecting' && isLoggingIn) {
+        if (loginStage === 'connecting' || isLoggingIn) {
           setLoginStage('authenticating');
         }
       }, 500);
@@ -88,7 +95,9 @@ export default function LoginPage() {
       await login();
       
       // Update stage to processing after login completes
-      setLoginStage('processing');
+      if (loginStatus === 'success') {
+        setLoginStage('processing');
+      }
     } catch (error: any) {
       console.error('Login error:', error);
       if (timeoutRef.current) {
@@ -134,13 +143,16 @@ export default function LoginPage() {
         return 'Authentication was cancelled. Please try again.';
       } else if (msg.toLowerCase().includes('network') || msg.toLowerCase().includes('fetch')) {
         return 'Network error. Please check your connection and try again.';
+      } else if (msg.toLowerCase().includes('already authenticated')) {
+        return 'Session conflict detected. Please try again.';
       }
       return msg;
     }
     return 'An error occurred during login. Please try again.';
   };
 
-  const showLoading = isLoggingIn || actorFetching;
+  const showLoading = (isLoggingIn || actorFetching) && !isError;
+  const canLogin = !isLoggingIn && !actorFetching && !isInitializing;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
@@ -190,21 +202,21 @@ export default function LoginPage() {
 
           <Button
             onClick={handleLogin}
-            disabled={showLoading}
-            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={!canLogin}
+            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
           >
             {showLoading ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="w-5 h-5 animate-spin" />
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 Authenticating...
-              </span>
+              </>
             ) : (
               'Login with Internet Identity'
             )}
           </Button>
 
           <div className="text-center text-xs text-muted-foreground">
-            By logging in, you agree to our terms of service and privacy policy
+            <p>Secure, decentralized authentication powered by the Internet Computer</p>
           </div>
         </CardContent>
       </Card>

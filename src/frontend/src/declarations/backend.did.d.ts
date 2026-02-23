@@ -69,7 +69,6 @@ export interface _SERVICE {
   >,
   'createUser' : ActorMethod<
     [
-      Principal,
       string,
       string,
       [] | [bigint],
@@ -78,25 +77,25 @@ export interface _SERVICE {
       string,
       UserRole,
     ],
-    undefined
+    string
   >,
   'deleteHotel' : ActorMethod<[bigint], undefined>,
-  'deleteUser' : ActorMethod<[Principal], undefined>,
+  'deleteUser' : ActorMethod<[string], undefined>,
   'getAllHotels' : ActorMethod<[], Array<Hotel>>,
   'getAllTasks' : ActorMethod<[], Array<Task>>,
-  'getAllUsersProfiles' : ActorMethod<[], Array<[Principal, UserProfile]>>,
+  'getAllUsersProfiles' : ActorMethod<[], Array<[string, UserProfile]>>,
   'getAuditLogs' : ActorMethod<[], Array<AuditLog>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole__1>,
   'getTask' : ActorMethod<[string], [] | [Task]>,
   'getTaskComments' : ActorMethod<[string], Array<TaskComment>>,
-  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'getUserProfile' : ActorMethod<[string], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'updateHotel' : ActorMethod<[bigint, string, boolean], undefined>,
   'updateUser' : ActorMethod<
     [
-      Principal,
+      string,
       string,
       string,
       [] | [bigint],

@@ -1,10 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix login authentication flow to resolve Version 17 login failure and eliminate post-login error message.
+**Goal:** Simplify user creation by removing the principal ID field and auto-generating it server-side.
 
 **Planned changes:**
-- Revert authentication logic to Version 16 state to restore working login functionality
-- Remove or fix the 'user is already authenticated' error message that appears after successful login
+- Remove principal ID input field from CreateUserDialog form component
+- Update useCreateUser mutation to remove principal ID parameter from input
+- Modify backend createUser method to automatically generate unique principal IDs for new users
 
-**User-visible outcome:** Users can successfully log in using Internet Identity without encountering blocking errors or 'already authenticated' messages, and are redirected smoothly to their dashboard.
+**User-visible outcome:** Users can create new accounts without needing to manually enter or understand principal IDs - the system handles this automatically.

@@ -8,18 +8,17 @@ import { Switch } from '@/components/ui/switch';
 import { useGetAllHotels } from '@/lib/backend/hotels';
 import { useUpdateUser } from '@/lib/backend/users';
 import { Loader2 } from 'lucide-react';
-import { Principal } from '@dfinity/principal';
 import type { UserProfile } from '@/backend';
 import { UserRole } from '@/backend';
 
 interface EditUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userPrincipal: Principal;
+  userId: string;
   userProfile: UserProfile;
 }
 
-export function EditUserDialog({ open, onOpenChange, userPrincipal, userProfile }: EditUserDialogProps) {
+export function EditUserDialog({ open, onOpenChange, userId, userProfile }: EditUserDialogProps) {
   const { data: hotels, isLoading: hotelsLoading } = useGetAllHotels();
   const updateUser = useUpdateUser();
 
@@ -99,7 +98,7 @@ export function EditUserDialog({ open, onOpenChange, userPrincipal, userProfile 
       const contactNumber = formData.contactNumber.trim() || null;
 
       await updateUser.mutateAsync({
-        userPrincipal,
+        userId,
         name: formData.name.trim(),
         username: formData.username.trim(),
         hotelId,

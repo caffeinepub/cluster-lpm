@@ -1,49 +1,62 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-21T10:14:39.503Z",
+  "generatedAt": "2026-02-21T11:26:14.540Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
+    "total": 3,
     "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Revert authentication logic to Version 16 state to restore working login functionality",
+        "summary": "Remove the principal ID input field from the CreateUserDialog form in frontend/src/components/admin/CreateUserDialog.tsx",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useInternetIdentity.ts",
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/hooks/useActor.ts"
+          "frontend/src/components/admin/CreateUserDialog.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/LoginPage.tsx"
+          "frontend/src/components/admin/CreateUserDialog.tsx"
         ]
       },
       {
         "id": "REQ-2",
-        "summary": "Remove or fix the 'user is already authenticated' error message that appears after successful login in Version 16",
+        "summary": "Update the useCreateUser mutation hook in frontend/src/lib/backend/users.ts to automatically generate or handle principal ID server-side when creating users, removing the principal ID parameter from the mutation input",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useInternetIdentity.ts",
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/components/auth/RequireAuth.tsx"
+          "frontend/src/lib/backend/users.ts"
         ],
         "matchedFiles": [
-          "frontend/src/pages/LoginPage.tsx"
+          "frontend/src/lib/backend/users.ts"
         ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Update the backend createUser method in backend/main.mo to automatically generate a unique principal ID for new users instead of accepting it as a parameter",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/pages/LoginPage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/admin/CreateUserDialog.tsx",
+    "frontend/src/components/admin/DeleteUserDialog.tsx",
+    "frontend/src/components/admin/EditUserDialog.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/lib/backend/users.ts",
+    "frontend/src/pages/admin/AdminUsersPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

@@ -1,57 +1,37 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix login authentication flow to resolve Version 17 login failure",
+  "title": "Remove principal ID field from user creation form",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Revert authentication logic to Version 16 state to restore working login functionality",
+      "summary": "Remove the principal ID input field from the CreateUserDialog form component",
       "acceptanceCriteria": [
-        "User can successfully initiate Internet Identity login flow",
-        "Authentication completes without blocking errors",
-        "User is redirected to appropriate page after login"
+        "Principal ID field is no longer visible in the user creation dialog",
+        "Form validation no longer requires principal ID input",
+        "User creation form only contains name, username, hotel assignment, contact info, password, and role fields"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useInternetIdentity.ts",
+          "path": "frontend/src/components/admin/CreateUserDialog.tsx",
           "operation": "modify",
-          "description": "Review and revert any authentication state management changes that broke the login flow in Version 17. Ensure the login method properly handles the AuthClient initialization, identity delegation, and session persistence without introducing blocking conditions. Verify the component's usage instructions from the authorization component before implementing."
-        },
-        {
-          "path": "frontend/src/pages/LoginPage.tsx",
-          "operation": "modify",
-          "description": "Restore the Version 16 login page logic that handled the multi-stage authentication flow correctly. Ensure proper handling of authentication states (connecting, authenticating, processing), timeout management, and redirect logic after successful login. Remove any Version 17 changes that introduced authentication blocking or flow interruptions."
-        },
-        {
-          "path": "frontend/src/hooks/useActor.ts",
-          "operation": "modify",
-          "description": "Review actor initialization and authentication state handling to ensure it properly integrates with the Internet Identity flow. Verify that the actor becomes available at the correct time in the authentication lifecycle and doesn't create race conditions or blocking states."
+          "description": "Remove the principal ID input field and its validation from the CreateUserDialog component. Remove the principalId state variable, the Principal.fromText validation logic, and the form field that collects principal ID from users. Update the form submission to exclude principal ID from the data sent to the backend."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Remove or fix the 'user is already authenticated' error message that appears after successful login in Version 16",
+      "summary": "Update the useCreateUser mutation hook to remove principal ID parameter from user creation",
       "acceptanceCriteria": [
-        "No 'already authenticated' error displays after successful login",
-        "User can proceed directly to their dashboard without error messages",
-        "Session state is correctly managed to prevent duplicate authentication checks"
+        "useCreateUser mutation no longer accepts principal ID as a parameter",
+        "Backend createUser method automatically assigns or generates principal ID",
+        "User creation succeeds without client-provided principal ID"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useInternetIdentity.ts",
+          "path": "frontend/src/lib/backend/users.ts",
           "operation": "modify",
-          "description": "Fix the duplicate authentication check that triggers the 'user is already authenticated' error. Implement proper session state validation to detect when a user is already authenticated before attempting login, and handle this case gracefully without showing an error message. Ensure the authentication state is correctly synchronized across the application."
-        },
-        {
-          "path": "frontend/src/pages/LoginPage.tsx",
-          "operation": "modify",
-          "description": "Add logic to check if the user is already authenticated before rendering the login form. If authenticated, redirect directly to the appropriate dashboard (admin or hotel) without displaying error messages. Handle the session restoration flow cleanly to prevent the 'already authenticated' error from appearing to users."
-        },
-        {
-          "path": "frontend/src/components/auth/RequireAuth.tsx",
-          "operation": "modify",
-          "description": "Ensure the authentication guard correctly handles already-authenticated sessions without triggering redundant authentication checks. Verify that the component doesn't cause the 'already authenticated' error when users navigate between protected routes or refresh the page while logged in."
+          "description": "Update the useCreateUser mutation hook to remove the principalId parameter from the createUser backend method call. The mutation should now only pass name, username, hotelId, securityManager, contactNumber, password, and role to the backend. Update the TypeScript types if needed to reflect that principal ID is no longer part of the mutation input."
         }
       ]
     }
