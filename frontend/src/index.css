@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Warm hospitality color palette using OKLCH */
+    --background: oklch(98% 0.01 60);
+    --foreground: oklch(25% 0.02 60);
+    --card: oklch(100% 0 0);
+    --card-foreground: oklch(25% 0.02 60);
+    --popover: oklch(100% 0 0);
+    --popover-foreground: oklch(25% 0.02 60);
+    
+    /* Warm amber/orange primary */
+    --primary: oklch(65% 0.15 50);
+    --primary-foreground: oklch(100% 0 0);
+    
+    /* Soft tan secondary */
+    --secondary: oklch(85% 0.05 60);
+    --secondary-foreground: oklch(30% 0.02 60);
+    
+    /* Muted earth tones */
+    --muted: oklch(92% 0.02 60);
+    --muted-foreground: oklch(50% 0.02 60);
+    
+    /* Warm accent */
+    --accent: oklch(75% 0.12 45);
+    --accent-foreground: oklch(100% 0 0);
+    
+    --destructive: oklch(55% 0.22 25);
+    --destructive-foreground: oklch(100% 0 0);
+    
+    --border: oklch(88% 0.02 60);
+    --input: oklch(88% 0.02 60);
+    --ring: oklch(65% 0.15 50);
+    
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: oklch(20% 0.02 60);
+    --foreground: oklch(95% 0.01 60);
+    --card: oklch(22% 0.02 60);
+    --card-foreground: oklch(95% 0.01 60);
+    --popover: oklch(22% 0.02 60);
+    --popover-foreground: oklch(95% 0.01 60);
+    
+    --primary: oklch(70% 0.15 50);
+    --primary-foreground: oklch(20% 0.02 60);
+    
+    --secondary: oklch(30% 0.03 60);
+    --secondary-foreground: oklch(95% 0.01 60);
+    
+    --muted: oklch(28% 0.02 60);
+    --muted-foreground: oklch(65% 0.02 60);
+    
+    --accent: oklch(60% 0.12 45);
+    --accent-foreground: oklch(95% 0.01 60);
+    
+    --destructive: oklch(55% 0.22 25);
+    --destructive-foreground: oklch(95% 0.01 60);
+    
+    --border: oklch(30% 0.02 60);
+    --input: oklch(30% 0.02 60);
+    --ring: oklch(70% 0.15 50);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Enhanced dialog overlay for better visibility */
+@layer components {
+  [data-radix-dialog-overlay],
+  [data-radix-alert-dialog-overlay] {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* Ensure buttons are always interactive */
+@layer utilities {
+  button {
+    pointer-events: auto !important;
+    cursor: pointer;
+  }
+  
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  
+  /* Ensure interactive elements have proper z-index */
+  .interactive-element {
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+  }
+}

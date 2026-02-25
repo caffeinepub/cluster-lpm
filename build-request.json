@@ -1,0 +1,40 @@
+{
+  "kind": "build_request",
+  "title": "Fix infinite loading on login page",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Fix the login page so that users are no longer stuck in an infinite loading state when authenticating via Internet Identity. The login flow must complete successfully and redirect the user to their appropriate dashboard (admin or hotel) or to profile setup if no profile exists.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "unable to login, keep on loading"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Clicking the login button initiates Internet Identity authentication without hanging indefinitely",
+        "After successful authentication, users with an existing profile are redirected to the correct dashboard (admin or hotel)",
+        "After successful authentication, users without a profile are redirected to the profile setup page",
+        "Loading state resolves within a reasonable time or shows an error if authentication fails",
+        "No infinite spinner or unresolved loading state remains on screen after the authentication attempt completes"
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts",
+    "Do not alter backend data models or existing actor methods"
+  ],
+  "nonGoals": [
+    "Adding new authentication methods",
+    "Changing the profile setup flow",
+    "Modifying dashboard content"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

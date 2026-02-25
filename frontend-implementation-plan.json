@@ -1,0 +1,25 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Fix infinite loading on login page",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Fix the login page so users are not stuck in infinite loading when authenticating via Internet Identity and properly redirect to dashboard or profile setup",
+      "acceptanceCriteria": [
+        "Clicking the login button initiates Internet Identity authentication without hanging indefinitely",
+        "After successful authentication, users with an existing profile are redirected to the correct dashboard (admin or hotel)",
+        "After successful authentication, users without a profile are redirected to the profile setup page",
+        "Loading state resolves within a reasonable time or shows an error if authentication fails",
+        "No infinite spinner or unresolved loading state remains on screen after the authentication attempt completes"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Fix the login flow to properly handle authentication state transitions and prevent infinite loading. Add error handling for failed login attempts, ensure loading states resolve correctly after Internet Identity authentication completes, and implement proper redirects based on user profile existence and role. Add timeout handling for authentication attempts that exceed a reasonable duration."
+        }
+      ]
+    }
+  ]
+}
